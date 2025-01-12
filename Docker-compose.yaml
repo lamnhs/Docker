@@ -1,0 +1,53 @@
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: sa
+      MYSQL_PASSWORD: 123456
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/dbtest.sql:/docker-entrypoint-initdb.d/dbtest.sql
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: sa
+      PMA_PASSWORD: 123456
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+  sqlserver:
+    container_name: sqlserver-db
+    restart: always
+    build: ./sqlserver                   # Dockerfile nằm trong thư mục sql
+    ports:
+      - "1434:1433"               # Cổng kết nối SQL Server
+    environment:
+      - ACCEPT_EULA=Y             # Chấp nhận điều khoản
+      - SA_PASSWORD=Lamlam@123    # Mật khẩu tài khoản SA
+    networks:
+      - sqlserver_net
+
+networks:
+  app-network:
+    driver: bridge
+  sqlserver_net:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
